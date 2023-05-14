@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int              @id @default(autoincrement())
+  username     String           @unique
+  email        String           @unique
+  passwordHash String
+  passwordSalt String
+  images       GeneratedImage[]
+  Token        Token[]
+}
+
+model GeneratedImage {
+  id        Int       @id @default(autoincrement())
+  variants  Variant[]
+  style     Style?    @relation(fields: [styleId], references: [id])
+  styleId   Int
+  createdAt DateTime  @default(now())
+  User      User      @relation(fields: [userId], references: [id])
+  userId    Int
+}
+
+model Variant {
+  id      Int            @id @default(autoincrement())
+  w       Int
+  url     String
+  Image   GeneratedImage @relation(fields: [imageId], references: [id])
+  imageId Int
+}
+
+model Style {
+  id             Int              @id @default(autoincrement())
+  active         Boolean
+  prompt         String
+  negativePrompt String
+  cfgScale       Int
+  iconUrl        String
+  GeneratedImage GeneratedImage[]
+}
+
+model Token {
+  token  String @id
+  user   User   @relation(fields: [userId], references: [id])
+  userId Int
+}
